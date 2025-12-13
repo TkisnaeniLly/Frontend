@@ -44,7 +44,7 @@ Detail pembagian tugas tiap peran dapat dilihat pada dokumen **Task Division**.
 ## Struktur Repository
 
 ```
-zalora-like-ecommerce/
+ecommerce/
 │
 ├── README.md
 ├── SCOPE.md
@@ -71,4 +71,5 @@ zalora-like-ecommerce/
 ---
 
 Dokumentasi tambahan tersedia pada file terpisah di repository ini.
+
 
