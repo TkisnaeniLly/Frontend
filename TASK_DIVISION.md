@@ -1,6 +1,6 @@
 # Task Division Website E-Commerce
 
-Dokumen ini berisi pembagian tugas (task division) dalam pengembangan **Website E-Commerce**. README ini digunakan sebagai panduan kerja tim agar setiap peran memiliki tanggung jawab yang jelas dan terstruktur.
+Dokumen ini berisi pembagian tugas (task division) dalam pengembangan **Website E-Commerce**. Selanjutnya digunakan sebagai panduan kerja tim agar setiap peran memiliki tanggung jawab yang jelas dan terstruktur.
 
 ---
 
