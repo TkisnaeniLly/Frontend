@@ -30,7 +30,9 @@
                 </div>
                 <div class="category-content">
                     <h3 class="category-name">T-Shirts</h3>
-                    <p class="category-count">{{ collect($products)->where('category', 't-shirt')->count() }} Products</p>
+                    <p class="category-count">
+                        {{ count(array_filter($products, function ($p) {return isset($p['category']) && $p['category'] === 't-shirt';})) }}
+                        Products</p>
                 </div>
             </div>
             <div class="category-card" data-category="jaket">
@@ -39,7 +41,9 @@
                 </div>
                 <div class="category-content">
                     <h3 class="category-name">Jackets</h3>
-                    <p class="category-count">{{ collect($products)->where('category', 'jaket')->count() }} Products</p>
+                    <p class="category-count">
+                        {{ count(array_filter($products, function ($p) {return isset($p['category']) && $p['category'] === 'jaket';})) }}
+                        Products</p>
                 </div>
             </div>
             <div class="category-card" data-category="sepatu">
@@ -48,7 +52,9 @@
                 </div>
                 <div class="category-content">
                     <h3 class="category-name">Shoes</h3>
-                    <p class="category-count">{{ collect($products)->where('category', 'sepatu')->count() }} Products</p>
+                    <p class="category-count">
+                        {{ count(array_filter($products, function ($p) {return isset($p['category']) && $p['category'] === 'sepatu';})) }}
+                        Products</p>
                 </div>
             </div>
             <div class="category-card" data-category="new">
@@ -57,7 +63,9 @@
                 </div>
                 <div class="category-content">
                     <h3 class="category-name">New Arrivals</h3>
-                    <p class="category-count">{{ collect($products)->where('badge', 'New')->count() }} Products</p>
+                    <p class="category-count">
+                        {{ count(array_filter($products, function ($p) {return isset($p['badge']) && $p['badge'] === 'New';})) }}
+                        Products</p>
                 </div>
             </div>
         </div>
@@ -79,16 +87,16 @@
         <div class="products-grid" id="productsGrid">
             @foreach ($products as $product)
                 <div class="product-card" data-id="{{ $product['id'] }}" data-category="{{ $product['category'] }}"
-                    data-badge="{{ $product['badge'] }}">
+                    data-badge="{{ $product['badge'] ?? '' }}">
                     <div class="product-image" style="background: linear-gradient(135deg, #D6A99D 0%, #C9967E 100%);">
                         @if (!empty($product['image']))
                             <img src="{{ App\Helpers\ImageHelper::getUrl($product['image']) }}" alt="{{ $product['name'] }}"
-                                this.nextElementSibling.style.display='block';"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                                 style="width: 100%; height: 100%; object-fit: cover;">
                         @else
                             <i class="fas fa-tshirt"></i>
                         @endif
-                        @if ($product['badge'])
+                        @if (!empty($product['badge']))
                             <span class="product-badge">{{ $product['badge'] }}</span>
                         @endif
                         <div class="product-actions">
@@ -104,13 +112,13 @@
                     <div class="product-info">
                         <p class="product-category">{{ $product['category'] }}</p>
                         <h3 class="product-name">{{ $product['name'] }}</h3>
-                        @if ($product['brand'])
+                        @if (!empty($product['brand']))
                             <p class="product-brand" style="font-size: 0.85rem; color: #888; margin-top: 0.25rem;">
                                 {{ $product['brand'] }}</p>
                         @endif
                         <div class="product-price">
                             <span class="current-price">Rp {{ number_format($product['price'], 0, ',', '.') }}</span>
-                            @if ($product['originalPrice'])
+                            @if (!empty($product['originalPrice']))
                                 <span class="original-price">Rp
                                     {{ number_format($product['originalPrice'], 0, ',', '.') }}</span>
                             @endif
