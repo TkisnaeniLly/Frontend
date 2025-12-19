@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>DB Admin - Tabel Varian Produk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f6f3e6;
+}
+
+/* ===== HEADER ===== */
+.header {
+    background: linear-gradient(to right, #cfa18f, #d8b2a3);
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-badge {
+    background: #9bb4b0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* ===== LAYOUT ===== */
+.container {
+    display: flex;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 230px;
+    background: #fff;
+    min-height: 100vh;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar h5 {
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 12px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 10px;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+    background: #d2a392;
+    color: white;
+}
+
+/* ===== CONTENT ===== */
+.content {
+    flex: 1;
+    padding: 30px;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+}
+
+/* ===== TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+thead {
+    background: #ead8b6;
+}
+
+th, td {
+    padding: 14px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    font-size: 14px;
+}
+
+/* ===== STATUS ===== */
+.status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.status.process {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status.shipped {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status.done {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* ===== BUTTON ===== */
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.detail {
+    background: #9bb4b0;
+    color: white;
+}
+
+.delete {
+    background: #e57373;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <h2>DB Admin</h2>
+    <div class="admin-badge">
+        <strong>DB</strong><br>Super User
+    </div>
+</div>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h5>TABEL UTAMA</h5>
+    <a href="#">👤 Tabel Users</a>
+    <a href="#" class="active">📦 Tabel Varian Produk</a>
+
+    <h5>SISTEM</h5>
+    <a href="#">🚪 Logout</a>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+    <div class="card">
+        <h2>Data Varian Produk</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Varian</th>
+                    <th>ID Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Ukuran</th>
+                    <th>Warna</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>VAR-001</td>
+                    <td>PRD-001</td>
+                    <td>Kemeja Linen</td>
+                    <td>M</td>
+                    <td>Beige</td>
+                    <td>Rp 299.000</td>
+                    <td>20</td>
+                    <td><span class="status done">Aktif</span></td>
+                    <td>
+                        <button class="action-btn detail">Edit</button>
+                        <button class="action-btn delete">Hapus</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>VAR-002</td>
+                    <td>PRD-001</td>
+                    <td>Kemeja Linen</td>
+                    <td>L</td>
+                    <td>Beige</td>
+                    <td>Rp 299.000</td>
+                    <td>0</td>
+                    <td><span class="status shipped">Habis</span></td>
+                    <td>
+                        <button class="action-btn detail">Edit</button>
+                        <button class="action-btn delete">Hapus</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>VAR-003</td>
+                    <td>PRD-002</td>
+                    <td>Dress Satin</td>
+                    <td>S</td>
+                    <td>Pink</td>
+                    <td>Rp 459.000</td>
+                    <td>15</td>
+                    <td><span class="status process">Draft</span></td>
+                    <td>
+                        <button class="action-btn detail">Edit</button>
+                        <button class="action-btn delete">Hapus</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+</div>
+</body>
+</html>
