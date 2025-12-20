@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT SHOP - Ultimate Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================
+           1. CORE STYLES 
+           ========================================= */
+        :root { --bg-color: #FDFBF7; --text-primary: #2C2C2C; --accent-color: #D6A99D; --white: #FFFFFF; --success: #27ae60; --error: #e74c3c; --star: #f1c40f; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-color); font-family: 'Montserrat', sans-serif; color: var(--text-primary); }
+
+        /* NAVBAR */
+        .navbar { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; background: var(--bg-color); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .nav-logo { font-family: 'Cormorant Garamond'; font-size: 24px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: var(--text-primary); }
+        .nav-links { display: flex; gap: 20px; list-style: none; }
+        .nav-links li { cursor: pointer; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; position: relative; transition: 0.3s; }
+        .nav-links li.active { color: var(--accent-color); }
+        .nav-links li.active::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 2px; background: var(--accent-color); }
+        
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .nav-icons i { font-size: 20px; cursor: pointer; transition: 0.3s; }
+        .nav-icons i:hover { color: var(--accent-color); }
+        .icon-wrap { position: relative; cursor: pointer; }
+        .count-badge { position: absolute; top: -8px; right: -8px; background: var(--accent-color); color: white; font-size: 9px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+        /* HEADER & LAYOUT */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px 100px; }
+        .shop-header { text-align: center; margin-bottom: 30px; position: relative; }
+        .shop-title { font-family: 'Cormorant Garamond'; font-size: 36px; margin: 10px 0; }
+        .shop-subtitle { font-size: 10px; letter-spacing: 3px; color: var(--accent-color); text-transform: uppercase; font-weight: 700; }
+        .btn-back { position: absolute; top: 50%; left: 0; transform: translateY(-50%); background: none; border: 1px solid var(--text-primary); padding: 8px 15px; cursor: pointer; font-size: 10px; font-weight: 600; text-transform: uppercase; display: none; align-items: center; gap: 5px; }
+        .btn-back:hover { background: var(--text-primary); color: white; }
+
+        /* FILTER */
+        .filter-bar { display: flex; justify-content: center; gap: 25px; margin-bottom: 40px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; }
+        .filter-link { cursor: pointer; font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #999; text-transform: uppercase; padding-bottom: 5px; border-bottom: 2px solid transparent; }
+        .filter-link.active { color: var(--text-primary); border-color: var(--accent-color); }
+
+        /* GRID MAIN PRODUCT */
+        .grid { display: none; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; animation: fadeIn 0.5s ease; }
+        .grid.active { display: grid; }
+
+        .product-card { cursor: pointer; }
+        .p-img-box { position: relative; height: 340px; background: #f0f0f0; margin-bottom: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .p-img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+        .product-card:hover .p-img { transform: scale(1.05); }
+        .badge { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.9); padding: 4px 10px; font-size: 9px; font-weight: 700; letter-spacing: 1px; z-index: 2; }
+        .p-actions { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateX(10px); transition: 0.3s; z-index: 5; }
+        .product-card:hover .p-actions { opacity: 1; transform: translateX(0); }
+        .act-btn { width: 35px; height: 35px; background: white; border: none; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .act-btn:hover { background: var(--text-primary); color: white; }
+        .act-btn.active i { color: var(--error); font-weight: 900; }
+        .p-info .cat { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        .p-info .title { font-family: 'Cormorant Garamond'; font-size: 20px; margin: 0 0 5px; font-weight: 600; }
+        .p-info .price { font-size: 14px; font-weight: 600; }
+        .star-mini { color: var(--star); font-size: 10px; margin-top: 5px; }
+
+        /* BRANDS & CATS */
+        .menu-card { background: white; border: 1px solid #eee; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; border-radius: 8px; }
+        .menu-card:hover { border-color: var(--accent-color); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .menu-card img { max-width: 100px; filter: grayscale(100%); transition: 0.3s; }
+        .menu-card:hover img { filter: grayscale(0); }
+        .menu-card i { font-size: 40px; margin-bottom: 15px; color: #ccc; transition: 0.3s; }
+        .menu-card:hover i { color: var(--accent-color); }
+        .menu-card h3 { font-family: 'Cormorant Garamond'; margin-top: 15px; font-size: 22px; }
+
+        /* CART SIDEBAR */
+        .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .cart-sidebar { position: fixed; top: 0; right: -400px; width: 400px; height: 100%; background: white; z-index: 2001; padding: 30px; display: flex; flex-direction: column; transition: 0.4s ease; box-shadow: -5px 0 30px rgba(0,0,0,0.1); }
+        .cart-sidebar.active { right: 0; }
+        .cart-overlay.active { opacity: 1; visibility: visible; }
+        .cart-item { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; }
+        .cart-img { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; }
+        .qty-ctrl { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        .qty-btn { border: 1px solid #ddd; background: none; width: 20px; height: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .trash-btn { border: none; background: none; color: var(--error); font-size: 14px; cursor: pointer; margin-left: auto; transition: 0.2s; }
+        .trash-btn:hover { transform: scale(1.2); }
+        .empty-cart-msg { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; color: #999; text-align: center; }
+        .empty-cart-msg i { font-size: 40px; margin-bottom: 15px; display: block; }
+
+        /* --- WISHLIST MODAL UPDATED STYLE --- */
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal-wrap.active { display: flex; }
+        .qv-close { position: absolute; top: 20px; right: 20px; border: none; background: transparent; font-size: 28px; cursor: pointer; color: #333; z-index: 10; line-height: 1; padding: 0; }
+        .qv-close:hover { color: var(--error); }
+
+        .wishlist-box { 
+            background: #FDFBF7; 
+            width: 900px; 
+            height: 600px; 
+            border-radius: 8px; 
+            position: relative; /* Penting untuk tombol X */
+            display: flex; 
+            flex-direction: column; 
+            padding: 40px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1); 
+        }
+
+        /* Tombol Close Wishlist (Baru) */
+        .close-wishlist {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+            z-index: 10;
+            transition: 0.3s;
+            line-height: 1;
+        }
+        .close-wishlist:hover {
+            color: var(--error);
+            transform: scale(1.1);
+        }
+
+        /* Header Wishlist (Centered) */
+        .wish-header-new { 
+            text-align: center; 
+            width: 100%;
+            margin-bottom: 20px; 
+            margin-top: 10px;
+            position: relative; 
+        }
+        .wish-title-new { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 500; letter-spacing: 1px; margin-bottom: 5px; color: var(--text-primary); }
+        .wish-subtitle-new { color: var(--accent-color); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+        .btn-move-all-new { margin-top: 15px; background: none; border: none; border-bottom: 1px solid var(--text-primary); padding-bottom: 2px; cursor: pointer; font-family: 'Montserrat'; font-size: 11px; font-weight: 600; transition: 0.3s; text-transform: uppercase; }
+        .btn-move-all-new:hover { color: var(--accent-color); border-color: var(--accent-color); }
+
+        .wish-grid-new { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; overflow-y: auto; padding: 10px; flex: 1; }
+        .w-card { background: transparent; position: relative; transition: transform 0.3s ease; }
+        .w-card:hover { transform: translateY(-5px); }
+        .w-img-box { position: relative; height: 260px; overflow: hidden; margin-bottom: 15px; background-color: #f0f0f0; border-radius: 4px; }
+        .w-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .w-card:hover .w-img { transform: scale(1.05); }
+        .w-btn-remove { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #555; cursor: pointer; z-index: 5; transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .w-btn-remove:hover { background: #fff; color: #e74c3c; transform: scale(1.1); box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
+        .w-info { text-align: center; }
+        .w-cat { font-size: 9px; text-transform: uppercase; color: #999; letter-spacing: 1px; margin-bottom: 5px; display:block; }
+        .w-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; margin-bottom: 5px; color: var(--text-primary); }
+        .w-price { font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px; }
+        .w-btn-cart { width: 100%; padding: 10px; background: transparent; color: var(--text-primary); border: 1px solid var(--text-primary); font-family: 'Montserrat'; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        .w-btn-cart:hover { background: var(--text-primary); color: white; }
+        .w-empty { text-align: center; margin-top: 80px; color: #999; width: 100%; display: none; }
+        .w-empty.show { display: block; }
+        .w-empty i { font-size: 40px; margin-bottom: 15px; color: #ddd; }
+
+        /* QUICK VIEW BOX */
+        .modal-box { background: white; width: 900px; height: 550px; display: flex; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .modal-left { flex: 1.2; background: #f9f9f9; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .main-stage-wrapper { width: 100%; height: 350px; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .main-stage-content { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .main-stage-content img, .main-stage-content video { width: 100%; height: 100%; object-fit: contain; animation: fadeIn 0.3s; }
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.8); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 16px; color: var(--text-primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; transition: 0.3s; opacity: 0; }
+        .main-stage-wrapper:hover .nav-btn { opacity: 1; }
+        .nav-btn:hover { background: var(--text-primary); color: white; }
+        .prev-btn { left: 10px; } .next-btn { right: 10px; }
+        .thumbs-container { display: flex; gap: 10px; justify-content: center; }
+        .thumb { width: 60px; height: 60px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; overflow: hidden; position: relative; opacity: 0.7; transition: 0.2s; background: white; }
+        .thumb:hover, .thumb.active { opacity: 1; border-color: var(--text-primary); }
+        .thumb img { width: 100%; height: 100%; object-fit: contain; }
+        .thumb-vid::after { content: '\f04b'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 14px; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .modal-right { flex: 1; padding: 40px; display: flex; flex-direction: column; position: relative; overflow-y: auto; }
+        .size-box { display: flex; gap: 10px; margin: 15px 0; }
+        .size-opt { width: 35px; height: 35px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 11px; font-weight: 600; transition: 0.2s; }
+        .size-opt:hover { border-color: var(--text-primary); }
+        .size-opt.selected { background: var(--text-primary); color: white; border-color: var(--text-primary); }
+        .btn-main { width: 100%; background: var(--text-primary); color: white; border: none; padding: 14px; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        .btn-main:hover { background: var(--accent-color); }
+        .rating-info { display: flex; align-items: center; gap: 5px; margin-bottom: 10px; font-size: 12px; color: #666; }
+        .stars { color: var(--star); }
+        .review-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; margin-top: 10px; }
+        .review-table td { border-bottom: 1px solid #eee; padding: 8px 0; color: #555; }
+        .review-table th { text-align: left; padding-bottom: 5px; color: #999; text-transform: uppercase; font-size: 9px; letter-spacing: 1px; }
+
+        /* STATS TABLE & OTHERS */
+        .stats-box { background: white; width: 700px; padding: 40px; border-radius: 8px; position: relative; max-height: 80vh; overflow-y: auto; }
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .stats-table th { text-align: left; padding: 15px; color: #999; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #eee; }
+        .stats-table td { padding: 15px; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
+        .rank-badge { width: 30px; height: 30px; background: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; font-family: 'Cormorant Garamond'; }
+        .pop-prod-info { display: flex; align-items: center; gap: 15px; }
+        .pop-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #f0f0f0; }
+        .pop-name { font-weight: 600; font-size: 14px; color: var(--text-primary); margin-bottom: 3px; display: block; }
+        .pop-meta { font-size: 11px; color: #888; }
+        .pop-rating { color: var(--star); font-size: 11px; }
+        .btn-plus { border: 1px solid #ddd; background: white; width: 30px; height: 30px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-plus:hover { background: var(--text-primary); color: white; border-color: var(--text-primary); }
+        .confirm-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2200; display: none; align-items: center; justify-content: center; }
+        .confirm-modal.active { display: flex; }
+        .confirm-box { background: white; padding: 30px; border-radius: 8px; text-align: center; width: 300px; animation: popIn 0.3s ease; }
+        .btn-yes { background: var(--error); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        .btn-no { background: #eee; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; }
+        #toast { position: fixed; bottom: 30px; right: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast-msg { background: #333; color: white; padding: 12px 25px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s forwards; }
+        .toast-msg.error i { color: var(--error); } .toast-msg.success i { color: var(--success); }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from {transform: scale(0.8)} to {transform: scale(1)} }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 15px; flex-wrap: wrap; gap: 15px; } .nav-links { display: none; }
+            .grid { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .modal-box { flex-direction: column; height: auto; width: 90%; max-height: 90vh; overflow-y: auto; }
+            .modal-left { padding: 10px; flex: unset; height: auto; }
+            .main-stage-wrapper { height: 250px; }
+            .cart-sidebar { width: 100%; right: -100%; }
+            .stats-box, .wishlist-box { width: 95%; padding: 20px; }
+            .nav-btn { opacity: 1; background: rgba(255, 255, 255, 0.5); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="nav-logo">IT SHOP</a>
+        <ul class="nav-links">
+            <li class="active" onclick="switchTab('all')">Shop All</li>
+            <li onclick="switchTab('men')">Men</li>
+            <li onclick="switchTab('women')">Women</li>
+            <li onclick="switchTab('kids')">Kids</li>
+            <li onclick="showMenu('brands')">Brands</li>
+            <li onclick="showStatsModal()">Best Sellers</li>
+        </ul>
+        <div class="nav-icons">
+            <i class="fas fa-search"></i>
+            <div class="icon-wrap" onclick="openWishlist()">
+                <i class="far fa-heart"></i>
+                <span class="count-badge" id="navWishCount">0</span>
+            </div>
+            <div class="icon-wrap" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="count-badge" id="navCartCount">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="shop-header">
+            <button class="btn-back" id="btnBack" onclick="showMenu('brands')"><i class="fas fa-arrow-left"></i> BACK</button>
+            <div class="shop-subtitle">New Collection 2025</div>
+            <h1 class="shop-title" id="pageTitle">Featured Products</h1>
+        </header>
+
+        <div class="filter-bar" id="subFilters">
+            <span class="filter-link active" onclick="applyFilter('all', this)">All</span>
+            <span class="filter-link" onclick="applyFilter('t-shirt', this)">T-Shirts</span>
+            <span class="filter-link" onclick="applyFilter('jacket', this)">Jackets</span>
+            <span class="filter-link" onclick="applyFilter('shoes', this)">Shoes</span>
+            <span class="filter-link" onclick="applyFilter('pants', this)">Pants</span>
+        </div>
+
+        <div id="gridProduct" class="grid active">
+            <div class="product-card" data-gender="men" data-cat="shoes" data-brand="Nike" data-rating="4.8" data-reviews="120" data-desc="Nike Air Force 1. Gaya klasik basket yang tak lekang waktu.">
+                <div class="p-img-box" style="background:#e0e0e0"><span class="badge">NEW</span><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/e0e0e0/333333?text=Nike+Air+Force" class="p-img"></div>
+                <div class="p-info"><span class="cat">SHOES</span><h3 class="title">Nike Air Force 1</h3><div class="price">Rp 1.549.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.8</div></div>
+            </div>
+            <div class="product-card" data-gender="men" data-cat="jacket" data-brand="Zara" data-rating="4.5" data-reviews="45" data-desc="Blazer formal fit slim, cocok untuk kantor dan acara semi-formal.">
+                <div class="p-img-box" style="background:#dfe6e9"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/dfe6e9/333333?text=Zara+Man+Blazer" class="p-img"></div>
+                <div class="p-info"><span class="cat">JACKET</span><h3 class="title">Zara Man Blazer</h3><div class="price">Rp 1.299.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.5</div></div>
+            </div>
+            <div class="product-card" data-gender="men" data-cat="t-shirt" data-brand="Uniqlo" data-rating="4.7" data-reviews="300" data-desc="Kaos katun premium dengan potongan oversized yang nyaman.">
+                <div class="p-img-box" style="background:#ffeaa7"><span class="badge">BEST</span><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/ffeaa7/333333?text=Uniqlo+U+Tee" class="p-img"></div>
+                <div class="p-info"><span class="cat">T-SHIRT</span><h3 class="title">Uniqlo U Crew Neck</h3><div class="price">Rp 199.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.7</div></div>
+            </div>
+            <div class="product-card" data-gender="men" data-cat="shoes" data-brand="Adidas" data-rating="4.9" data-reviews="50" data-desc="Sepatu lari dengan teknologi boost untuk pengembalian energi maksimal.">
+                <div class="p-img-box" style="background:#55efc4"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/55efc4/333333?text=Adidas+Ultraboost" class="p-img"></div>
+                <div class="p-info"><span class="cat">SHOES</span><h3 class="title">Adidas Ultraboost</h3><div class="price">Rp 3.300.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.9</div></div>
+            </div>
+            <div class="product-card" data-gender="men" data-cat="pants" data-brand="HM" data-rating="4.2" data-reviews="80" data-desc="Celana chino slim fit yang nyaman untuk gaya kasual.">
+                <div class="p-img-box" style="background:#b2bec3"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/b2bec3/333333?text=H%26M+Chino" class="p-img"></div>
+                <div class="p-info"><span class="cat">PANTS</span><h3 class="title">H&M Slim Chinos</h3><div class="price">Rp 399.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.2</div></div>
+            </div>
+
+            <div class="product-card" data-gender="women" data-cat="shoes" data-brand="Zara" data-rating="4.6" data-reviews="90" data-desc="High heels elegan untuk pesta dengan kenyamanan ekstra.">
+                <div class="p-img-box" style="background:#ffcccc"><span class="badge">HOT</span><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/ffcccc/333333?text=Zara+Heels" class="p-img"></div>
+                <div class="p-info"><span class="cat">SHOES</span><h3 class="title">Zara High Heels</h3><div class="price">Rp 899.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.6</div></div>
+            </div>
+            <div class="product-card" data-gender="women" data-cat="pants" data-brand="Uniqlo" data-rating="4.8" data-reviews="210" data-desc="Celana wide leg dengan detail lipit yang modis dan nyaman.">
+                <div class="p-img-box" style="background:#a29bfe"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/a29bfe/333333?text=Uniqlo+Wide+Pants" class="p-img"></div>
+                <div class="p-info"><span class="cat">PANTS</span><h3 class="title">Uniqlo Wide Pants</h3><div class="price">Rp 499.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.8</div></div>
+            </div>
+            <div class="product-card" data-gender="women" data-cat="jacket" data-brand="HM" data-rating="4.4" data-reviews="65" data-desc="Jaket denim oversized untuk tampilan vintage yang santai.">
+                <div class="p-img-box" style="background:#74b9ff"><span class="badge">SALE</span><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/74b9ff/333333?text=H%26M+Denim" class="p-img"></div>
+                <div class="p-info"><span class="cat">JACKET</span><h3 class="title">H&M Denim Jacket</h3><div class="price">Rp 599.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.4</div></div>
+            </div>
+            <div class="product-card" data-gender="women" data-cat="shoes" data-brand="Adidas" data-rating="4.7" data-reviews="150" data-desc="Sneakers ikonik Stan Smith dengan desain minimalis putih.">
+                <div class="p-img-box" style="background:#fdcb6e"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/fdcb6e/333333?text=Adidas+Stan+Smith" class="p-img"></div>
+                <div class="p-info"><span class="cat">SHOES</span><h3 class="title">Adidas Stan Smith</h3><div class="price">Rp 1.400.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.7</div></div>
+            </div>
+            <div class="product-card" data-gender="women" data-cat="t-shirt" data-brand="Nike" data-rating="4.5" data-reviews="88" data-desc="Kaos olahraga dry-fit yang menyerap keringat.">
+                <div class="p-img-box" style="background:#ff7675"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/ff7675/333333?text=Nike+Dry+Fit" class="p-img"></div>
+                <div class="p-info"><span class="cat">T-SHIRT</span><h3 class="title">Nike Women Tee</h3><div class="price">Rp 349.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.5</div></div>
+            </div>
+
+            <div class="product-card" data-gender="kids" data-cat="shoes" data-brand="Nike" data-rating="4.5" data-reviews="60" data-desc="Gaya retro basket untuk si kecil, kuat dan nyaman dipakai bermain.">
+                <div class="p-img-box" style="background:#81ecec"><span class="badge">KIDS</span><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/81ecec/333333?text=Nike+Court+Kids" class="p-img"></div>
+                <div class="p-info"><span class="cat">SHOES</span><h3 class="title">Nike Court Borough</h3><div class="price">Rp 650.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.5</div></div>
+            </div>
+            <div class="product-card" data-gender="kids" data-cat="t-shirt" data-brand="Uniqlo" data-rating="4.6" data-reviews="40" data-desc="Kaos grafis lucu dengan bahan katun lembut untuk anak.">
+                <div class="p-img-box" style="background:#fab1a0"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/fab1a0/333333?text=Uniqlo+Kids+Tee" class="p-img"></div>
+                <div class="p-info"><span class="cat">T-SHIRT</span><h3 class="title">Uniqlo Kids Graphic</h3><div class="price">Rp 149.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.6</div></div>
+            </div>
+            <div class="product-card" data-gender="kids" data-cat="shoes" data-brand="Adidas" data-rating="4.8" data-reviews="95" data-desc="Sepatu klasik Superstar ukuran anak dengan strap velcro mudah.">
+                <div class="p-img-box" style="background:#00cec9"><span class="badge">BEST</span><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/00cec9/333333?text=Adidas+Superstar" class="p-img"></div>
+                <div class="p-info"><span class="cat">SHOES</span><h3 class="title">Adidas Superstar Kids</h3><div class="price">Rp 750.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.8</div></div>
+            </div>
+            <div class="product-card" data-gender="kids" data-cat="jacket" data-brand="Zara" data-rating="4.3" data-reviews="25" data-desc="Jaket bomber anak yang stylish dan hangat.">
+                <div class="p-img-box" style="background:#6c5ce7"><div class="p-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="far fa-heart"></i></button><button class="act-btn" onclick="quickView(this)"><i class="far fa-eye"></i></button></div><img src="https://via.placeholder.com/400/6c5ce7/333333?text=Zara+Kids+Bomber" class="p-img"></div>
+                <div class="p-info"><span class="cat">JACKET</span><h3 class="title">Zara Kids Bomber</h3><div class="price">Rp 550.000</div><div class="star-mini"><i class="fas fa-star"></i> 4.3</div></div>
+            </div>
+
+        </div>
+
+        <div id="gridBrand" class="grid">
+            <div class="menu-card" onclick="filterByBrand('Nike')"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg"><h3>Nike</h3></div>
+            <div class="menu-card" onclick="filterByBrand('Adidas')"><img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg"><h3>Adidas</h3></div>
+            <div class="menu-card" onclick="filterByBrand('Uniqlo')"><img src="https://upload.wikimedia.org/wikipedia/commons/9/92/UNIQLO_logo.svg"><h3>Uniqlo</h3></div>
+            <div class="menu-card" onclick="filterByBrand('Zara')"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Zara_Logo.svg"><h3>Zara</h3></div>
+            <div class="menu-card" onclick="filterByBrand('HM')"><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/H%26M-Logo.svg"><h3>H&M</h3></div>
+        </div>
+
+        <div id="gridCat" class="grid">
+            <div class="menu-card" onclick="forceFilterCat('t-shirt')"><i class="fas fa-tshirt"></i><h3>T-Shirts</h3></div>
+            <div class="menu-card" onclick="forceFilterCat('jacket')"><i class="fas fa-user-tie"></i><h3>Jackets</h3></div>
+            <div class="menu-card" onclick="forceFilterCat('shoes')"><i class="fas fa-shoe-prints"></i><h3>Shoes</h3></div>
+            <div class="menu-card" onclick="forceFilterCat('pants')"><i class="fas fa-layer-group"></i><h3>Pants</h3></div>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+            <h2 style="font-family:'Cormorant Garamond'; margin:0;">Your Cart</h2>
+            <button class="close-cart" onclick="toggleCart()" style="background:none; border:none; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+        <div class="cart-items-container" id="cartItems"></div>
+        <div class="cart-footer" id="cartFooter">
+            <div style="display:flex; justify-content:space-between; font-weight:700; font-size:18px; margin-bottom:15px;">
+                <span>Total</span><span id="cartTotal">Rp 0</span>
+            </div>
+            <button class="btn-main" onclick="alert('Checkout')">Checkout</button>
+        </div>
+    </div>
+
+    <div class="modal-wrap" id="wishlistModal">
+        <div class="wishlist-box">
+            <button class="close-wishlist" onclick="closeWishlist()">✕</button>
+            
+            <div class="wish-header-new">
+                <h2 class="wish-title-new">My Wishlist</h2>
+                <p class="wish-subtitle-new">Your curated selection of favorites</p>
+                <button class="btn-move-all-new" id="btnMoveAll" onclick="moveAllToCart()">Move All to Cart</button>
+            </div>
+
+            <div class="wish-grid-new" id="wishGrid"></div>
+            
+            <div class="w-empty" id="emptyWishMsg">
+                <i class="far fa-heart"></i>
+                <h3 style="font-family: 'Cormorant Garamond'; font-size: 24px;">Your Wishlist is Empty</h3>
+                <p style="font-size:12px; margin-top:5px;">You haven't added any items yet.</p>
+                <button class="btn-main" onclick="closeWishlist()" style="width:auto; padding:10px 30px; margin-top:20px;">Start Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-wrap" id="qvModal">
+        <div class="modal-box">
+            <div class="modal-left">
+                <div class="main-stage-wrapper">
+                    <button class="nav-btn prev-btn" onclick="navigateMedia(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="nav-btn next-btn" onclick="navigateMedia(1)"><i class="fas fa-chevron-right"></i></button>
+                    <div class="main-stage-content" id="qvMainMediaContainer"></div>
+                </div>
+                <div class="thumbs-container" id="qvThumbs"></div>
+            </div>
+            <div class="modal-right">
+                <button class="qv-close" onclick="closeQv()">✕</button>
+                <span style="font-size:10px; color:#999; letter-spacing:1px;" id="qvCat">CATEGORY</span>
+                <h2 style="font-family:'Cormorant Garamond'; font-size:32px; margin:5px 0;" id="qvTitle">Product</h2>
+                <div class="rating-info">
+                    <span class="stars" id="qvStars"></span>
+                    <span id="qvRatingNum">4.8</span>
+                    <span style="color:#999">| <span id="qvReviewCount">120</span> Reviews</span>
+                </div>
+                <div style="font-size:20px; font-weight:600; margin:10px 0;" id="qvPrice">Rp 0</div>
+                <p style="font-size:13px; line-height:1.6; color:#666; margin-bottom:20px;" id="qvDesc">Deskripsi produk...</p>
+                <table class="review-table">
+                    <tr><th>Availability</th><td>In Stock</td></tr>
+                    <tr><th>Product ID</th><td>PRD-2025-001</td></tr>
+                    <tr><th>Shipping</th><td>Free Shipping</td></tr>
+                </table>
+                <span style="font-size:11px; font-weight:700;">SIZE</span>
+                <div class="size-box">
+                    <button class="size-opt" onclick="selSize(this)">S</button>
+                    <button class="size-opt" onclick="selSize(this)">M</button>
+                    <button class="size-opt" onclick="selSize(this)">L</button>
+                    <button class="size-opt" onclick="selSize(this)">XL</button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-main" onclick="addToCart()">ADD TO CART</button>
+                    <button class="act-btn" onclick="toggleWish(this)" style="border:1px solid #ddd;"><i class="far fa-heart"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-wrap" id="statsModal">
+        <div class="stats-box">
+            <button class="qv-close" onclick="closeStatsModal()">✕</button>
+            <h2 style="font-family:'Cormorant Garamond'; margin-bottom:10px;">Most Popular Products</h2>
+            <p style="font-size:12px; color:#666; margin-bottom:20px;">Produk paling banyak dicari dan dibeli minggu ini.</p>
+            <table class="stats-table">
+                <thead><tr><th style="width:50px;">Rank</th><th>Product</th><th>Sold</th><th>Rating</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr><td><div class="rank-badge">1</div></td><td><div class="pop-prod-info"><img src="https://via.placeholder.com/50/D6A99D/ffffff?text=1" class="pop-img"><div><span class="pop-name">Nike Air Force 1</span><span class="pop-meta">Rp 1.549.000</span></div></div></td><td style="font-weight:700;">1,240</td><td><span class="pop-rating"><i class="fas fa-star"></i> 4.9</span></td><td><button class="btn-plus" onclick="addDirectToCart('Nike Air Force 1', '1.549.000', 'SHOES', 'https://via.placeholder.com/400/D6A99D/ffffff?text=Nike')"><i class="fas fa-plus"></i></button></td></tr>
+                    <tr><td><div class="rank-badge">2</div></td><td><div class="pop-prod-info"><img src="https://via.placeholder.com/50/a4b0be/ffffff?text=2" class="pop-img"><div><span class="pop-name">Uniqlo Oversized</span><span class="pop-meta">Rp 199.000</span></div></div></td><td style="font-weight:700;">985</td><td><span class="pop-rating"><i class="fas fa-star"></i> 4.8</span></td><td><button class="btn-plus" onclick="addDirectToCart('Uniqlo U Oversized', '199.000', 'T-SHIRT', 'https://via.placeholder.com/400/a4b0be/ffffff?text=Uniqlo')"><i class="fas fa-plus"></i></button></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="confirm-modal" id="delModal">
+        <div class="confirm-box">
+            <h3>Hapus Produk?</h3>
+            <p style="font-size:12px; color:#666; margin:10px 0 20px;">Yakin ingin menghapus item ini dari keranjang?</p>
+            <div style="display:flex; justify-content:center; gap:10px;">
+                <button class="btn-no" onclick="closeDel()">Batal</button>
+                <button class="btn-yes" onclick="execDel()">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        // --- LOGIC ---
+        let currentTab = 'all'; 
+        let currentSubFilter = 'all';
+        let cart = [];
+        let wishlist = []; 
+        let tempProduct = {};
+        let delIndex = null;
+        let mediaList = []; 
+        let mediaIndex = 0; 
+
+        function switchTab(tab) {
+            currentTab = tab; currentSubFilter = 'all';
+            document.querySelectorAll('.grid').forEach(g => g.classList.remove('active'));
+            document.getElementById('gridProduct').classList.add('active');
+            document.getElementById('subFilters').style.display = 'flex';
+            document.getElementById('btnBack').style.display = 'none';
+            document.getElementById('pageTitle').innerText = (tab === 'all') ? 'Featured Products' : tab.toUpperCase() + ' Collection';
+            document.querySelectorAll('.filter-link').forEach(l => l.classList.remove('active'));
+            document.querySelector('.filter-link').classList.add('active');
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            const idx = ['all','men','women','kids'].indexOf(tab);
+            if(idx > -1) document.querySelectorAll('.nav-links li')[idx].classList.add('active');
+            renderProducts();
+        }
+
+        function showMenu(type) {
+            document.querySelectorAll('.grid').forEach(g => g.classList.remove('active'));
+            document.getElementById('subFilters').style.display = 'none';
+            document.getElementById('btnBack').style.display = 'none';
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            if(type === 'brands') {
+                document.getElementById('gridBrand').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'Our Brands';
+                document.querySelectorAll('.nav-links li')[4].classList.add('active');
+            } else {
+                document.getElementById('gridCat').classList.add('active');
+                document.getElementById('pageTitle').innerText = 'Browse Categories';
+                document.querySelectorAll('.nav-links li')[5].classList.add('active');
+            }
+        }
+
+        function applyFilter(cat, btn) {
+            currentSubFilter = cat;
+            document.querySelectorAll('.filter-link').forEach(l => l.classList.remove('active'));
+            btn.classList.add('active');
+            renderProducts();
+        }
+
+        function renderProducts() {
+            document.querySelectorAll('.product-card').forEach(card => {
+                const pGender = card.getAttribute('data-gender');
+                const pCat = card.getAttribute('data-cat');
+                let genderMatch = (currentTab === 'all' || currentTab === pGender);
+                let catMatch = (currentSubFilter === 'all' || currentSubFilter === pCat);
+                card.style.display = (genderMatch && catMatch) ? 'block' : 'none';
+            });
+        }
+
+        function filterByBrand(brand) {
+            currentTab = 'all'; currentSubFilter = 'all';
+            document.querySelectorAll('.grid').forEach(g => g.classList.remove('active'));
+            document.getElementById('gridProduct').classList.add('active');
+            document.getElementById('subFilters').style.display = 'flex';
+            document.getElementById('btnBack').style.display = 'flex'; 
+            document.getElementById('pageTitle').innerText = brand + ' Collection';
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.style.display = (card.getAttribute('data-brand') === brand) ? 'block' : 'none';
+            });
+        }
+
+        function forceFilterCat(cat) {
+            currentTab = 'all'; currentSubFilter = cat;
+            document.querySelectorAll('.grid').forEach(g => g.classList.remove('active'));
+            document.getElementById('gridProduct').classList.add('active');
+            document.getElementById('subFilters').style.display = 'flex';
+            document.getElementById('btnBack').style.display = 'flex';
+            document.getElementById('pageTitle').innerText = cat.toUpperCase() + ' Collection';
+            document.querySelectorAll('.filter-link').forEach(l => {
+                l.classList.toggle('active', l.innerText.toLowerCase().includes(cat));
+            });
+            renderProducts();
+        }
+
+        function quickView(btn) {
+            const card = btn.closest('.product-card');
+            const title = card.querySelector('.title').innerText;
+            const price = card.querySelector('.price').innerText;
+            const cat = card.querySelector('.cat').innerText;
+            const img = card.querySelector('.p-img').src;
+            const rating = card.getAttribute('data-rating');
+            const reviews = card.getAttribute('data-reviews');
+            const desc = card.getAttribute('data-desc');
+            tempProduct = { title, price, cat, img, size: null, quantity: 1, rawPrice: parseInt(price.replace(/\D/g,'')) };
+            document.getElementById('qvTitle').innerText = title;
+            document.getElementById('qvPrice').innerText = price;
+            document.getElementById('qvCat').innerText = cat;
+            document.getElementById('qvDesc').innerText = desc ? desc : "Deskripsi produk kualitas premium.";
+            document.getElementById('qvRatingNum').innerText = rating;
+            document.getElementById('qvReviewCount').innerText = reviews;
+            let starsHTML = '';
+            for(let i=0; i<5; i++) { starsHTML += (i < Math.floor(rating)) ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>'; }
+            document.getElementById('qvStars').innerHTML = starsHTML;
+            mediaList = [ { type: 'img', src: img, filter: '' }, { type: 'img', src: img, filter: 'hue-rotate(30deg) saturate(1.5)' }, { type: 'img', src: img, filter: 'hue-rotate(60deg) brightness(0.9)' }, { type: 'vid', src: '', filter: 'grayscale(100%) contrast(1.2)' } ];
+            mediaIndex = 0; 
+            let thumbsHTML = '';
+            mediaList.forEach((media, idx) => {
+                let content = `<img src="${media.src}" style="filter: ${media.filter}">`;
+                let extraClass = media.type === 'vid' ? ' thumb-vid' : '';
+                thumbsHTML += `<div class="thumb${extraClass}" onclick="loadMediaByIndex(${idx})">${content}</div>`;
+            });
+            document.getElementById('qvThumbs').innerHTML = thumbsHTML;
+            loadMediaByIndex(0);
+            document.querySelectorAll('.size-opt').forEach(b => b.classList.remove('selected'));
+            document.getElementById('qvModal').classList.add('active');
+        }
+
+        function loadMediaByIndex(idx) {
+            mediaIndex = idx;
+            const media = mediaList[mediaIndex];
+            const stage = document.getElementById('qvMainMediaContainer');
+            if (media.type === 'img') stage.innerHTML = `<img src="${media.src}" style="filter:${media.filter}">`;
+            else stage.innerHTML = `<div style="width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; color:white; flex-direction:column; border-radius:4px;"><i class="fas fa-play-circle" style="font-size:60px; margin-bottom:15px; opacity:0.8;"></i><span style="font-size:12px; letter-spacing:1px; text-transform:uppercase;">Product Video Demo</span></div>`;
+            document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
+        }
+
+        function navigateMedia(direction) {
+            mediaIndex += direction;
+            if (mediaIndex < 0) mediaIndex = mediaList.length - 1;
+            else if (mediaIndex >= mediaList.length) mediaIndex = 0;
+            loadMediaByIndex(mediaIndex);
+        }
+
+        function closeQv() { document.getElementById('qvModal').classList.remove('active'); }
+        function selSize(btn) { document.querySelectorAll('.size-opt').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); tempProduct.size = btn.innerText; }
+        
+        function addToCart() {
+            if(!tempProduct.size) { toast("Pilih size dulu!", true); return; }
+            const exist = cart.find(i => i.title === tempProduct.title && i.size === tempProduct.size);
+            if(exist) exist.quantity++; else cart.push(tempProduct);
+            updateCart(); closeQv(); toast("Berhasil masuk keranjang!"); setTimeout(toggleCart, 300);
+        }
+
+        function addDirectToCart(title, priceStr, cat, img) {
+            let rawPrice = parseInt(priceStr.replace(/\./g, '').replace('Rp ', ''));
+            let newItem = { title: title, price: 'Rp '+priceStr, cat: cat, img: img, size: 'M', quantity: 1, rawPrice: rawPrice };
+            const exist = cart.find(i => i.title === newItem.title && i.size === 'M');
+            if(exist) exist.quantity++; else cart.push(newItem);
+            updateCart(); closeStatsModal(); toast("Berhasil masuk keranjang!"); setTimeout(toggleCart, 300); 
+        }
+
+        function updateCart() {
+            const list = document.getElementById('cartItems'); list.innerHTML = '';
+            let total = 0; let count = 0;
+            if(cart.length === 0) {
+                list.innerHTML = `<div class="empty-cart-msg"><i class="fas fa-shopping-basket"></i><p>Keranjang Kosong</p></div>`;
+                document.getElementById('cartFooter').style.display = 'none';
+            } else {
+                document.getElementById('cartFooter').style.display = 'block';
+                cart.forEach((item, idx) => {
+                    total += item.rawPrice * item.quantity; count += item.quantity;
+                    list.innerHTML += `<div class="cart-item"><img src="${item.img}" class="cart-img"><div style="flex:1"><div style="font-size:14px; font-weight:600;">${item.title}</div><div style="font-size:11px; color:#888;">${item.size} | ${item.cat}</div><div style="font-size:13px; font-weight:700; margin-top:5px;">Rp ${format(item.rawPrice * item.quantity)}</div><div class="qty-ctrl"><button class="qty-btn" onclick="modQty(${idx}, -1)">-</button><span style="font-size:11px;">${item.quantity}</span><button class="qty-btn" onclick="modQty(${idx}, 1)">+</button><button class="trash-btn" onclick="askDel(${idx})"><i class="fas fa-trash-alt"></i></button></div></div></div>`;
+                });
+            }
+            document.getElementById('cartTotal').innerText = 'Rp ' + format(total);
+            document.getElementById('navCartCount').innerText = count;
+        }
+
+        function toggleCart() { document.getElementById('cartSidebar').classList.toggle('active'); document.getElementById('cartOverlay').classList.toggle('active'); }
+        function modQty(idx, val) { cart[idx].quantity += val; if(cart[idx].quantity < 1) cart[idx].quantity = 1; updateCart(); }
+        function askDel(idx) { delIndex = idx; document.getElementById('delModal').classList.add('active'); }
+        function closeDel() { document.getElementById('delModal').classList.remove('active'); }
+        function execDel() { if(delIndex !== null) { cart.splice(delIndex, 1); updateCart(); closeDel(); toast("Produk dihapus!", true); } }
+
+        function toggleWish(btn) {
+            btn.classList.toggle('active');
+            const i = btn.querySelector('i');
+            const card = btn.closest('.product-card') || btn.closest('.modal-right'); 
+            let title, price, img, cat;
+            if(card.classList.contains('product-card')) {
+                title = card.querySelector('.title').innerText; price = card.querySelector('.price').innerText; img = card.querySelector('.p-img').src; cat = card.querySelector('.cat').innerText;
+            } else {
+                title = document.getElementById('qvTitle').innerText; price = document.getElementById('qvPrice').innerText; img = mediaList[0].src; cat = document.getElementById('qvCat').innerText;
+            }
+            if(btn.classList.contains('active')) { i.classList.remove('far'); i.classList.add('fas'); addToWishlist(title, price, img, cat); } else { i.classList.remove('fas'); i.classList.add('far'); removeFromWishlist(title); }
+        }
+
+        function addToWishlist(title, price, img, cat) {
+            const exists = wishlist.some(item => item.title === title);
+            if(!exists) { wishlist.push({ title, price, img, cat }); toast("Masuk Wishlist"); updateWishCount(); }
+        }
+
+        function removeFromWishlist(title) {
+            wishlist = wishlist.filter(item => item.title !== title); toast("Hapus dari Wishlist"); updateWishCount(); renderWishlistNew();
+        }
+
+        function removeWithAnimation(title, btnElement) {
+            const card = btnElement.closest('.w-card');
+            card.style.opacity = '0'; card.style.transform = 'translateY(20px)';
+            setTimeout(() => { removeFromWishlist(title); }, 300);
+        }
+
+        function updateWishCount() { document.getElementById('navWishCount').innerText = wishlist.length; }
+        function openWishlist() { renderWishlistNew(); document.getElementById('wishlistModal').classList.add('active'); }
+        function closeWishlist() { document.getElementById('wishlistModal').classList.remove('active'); }
+
+        function renderWishlistNew() {
+            const container = document.getElementById('wishGrid'); const emptyMsg = document.getElementById('emptyWishMsg'); const moveAllBtn = document.getElementById('btnMoveAll');
+            container.innerHTML = '';
+            if (wishlist.length === 0) { container.style.display = 'none'; emptyMsg.classList.add('show'); moveAllBtn.style.display = 'none'; return; }
+            container.style.display = 'grid'; emptyMsg.classList.remove('show'); moveAllBtn.style.display = 'inline-block';
+            wishlist.forEach(item => {
+                const cleanPrice = item.price.replace('Rp ', '');
+                container.innerHTML += `<div class="w-card"><button class="w-btn-remove" onclick="removeWithAnimation('${item.title}', this)"><i class="far fa-trash-alt"></i></button><div class="w-img-box"><img src="${item.img}" class="w-img"></div><div class="w-info"><div class="w-cat">${item.cat}</div><h3 class="w-name">${item.title}</h3><div class="w-price">${item.price}</div></div><button class="w-btn-cart" onclick="addDirectToCart('${item.title}', '${cleanPrice}', '${item.cat}', '${item.img}')">Add to Cart</button></div>`;
+            });
+        }
+
+        function moveAllToCart() {
+            if(wishlist.length === 0) return;
+            if(confirm("Move all " + wishlist.length + " items to cart?")) {
+                wishlist.forEach(item => { addDirectToCart(item.title, item.price.replace('Rp ', ''), item.cat, item.img); });
+                wishlist = []; updateWishCount(); renderWishlistNew();
+            }
+        }
+
+        function showStatsModal() { document.getElementById('statsModal').classList.add('active'); }
+        function closeStatsModal() { document.getElementById('statsModal').classList.remove('active'); }
+        function toast(msg, err=false) { const t = document.createElement('div'); t.className = 'toast-msg ' + (err?'error':'success'); t.innerHTML = `<i class="fas ${err?'fa-exclamation-circle':'fa-check-circle'}"></i> ${msg}`; document.getElementById('toast').appendChild(t); setTimeout(() => t.remove(), 3000); }
+        function format(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+        updateCart();
+    </script>
+</body>
+</html>
