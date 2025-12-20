@@ -5,7 +5,12 @@
     <div class="cart-container">
         <div class="cart-header">
             <p class="cart-subtitle">Your Selection</p>
-            <h1 class="cart-title">Shopping Cart</h1>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+                <h1 class="cart-title">Shopping Cart</h1>
+                <button onclick="clearMyCart()"
+                    style="background:none; border:none; color:var(--text-secondary); cursor:pointer; text-decoration:underline;">Remove
+                    All</button>
+            </div>
         </div>
 
         <div id="cartContent">
@@ -483,71 +488,227 @@
             return 'Rp ' + amount.toLocaleString('id-ID');
         }
 
-        function loadCart() {
+        async function loadCart() {
             try {
-                const saved = localStorage.getItem('cart');
-                if (saved) {
-                    const cartData = JSON.parse(saved);
-
-                    // Handle both old and new format
-                    if (Array.isArray(cartData)) {
-                        // Old format: direct array
-                        cartItems = cartData.map(transformCartItem);
-                    } else if (cartData.items) {
-                        // New format: object with items and promo
-                        cartItems = cartData.items.map(transformCartItem);
-                        appliedPromo = cartData.promo || null;
+                const response = await fetch('/cart/data');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data && data.data.items) {
+                        cartItems = data.data.items.map(transformCartItem);
+                        renderCart(data.data.total_price);
                     } else {
                         cartItems = [];
+                        renderCart(0);
                     }
-                } else {
+                } else if (response.status === 401) {
+                    // Not logged in, maybe show empty or redirect?
+                    // For now show empty with login prompt if needed, generally restricted by middleware?
+                    // User requested "UpdateCart, DeleteCart, and GetMyCart... ONLY if user is logged in"
+                    // If we access this page as guest, we might see empty or error.
                     cartItems = [];
+                    renderCart(0);
                 }
             } catch (error) {
                 console.error('Error loading cart:', error);
                 cartItems = [];
+                renderCart(0);
             }
         }
 
-        // Transform cart item to ensure consistent format
+        // Transform API cart item to frontend format
         function transformCartItem(item) {
+            let imageUrl = item.product.image;
+            if (imageUrl && !imageUrl.startsWith('http')) {
+                // If it's a relative path, prepend API URL
+                // Check if it starts with / or not
+                if (imageUrl.startsWith('/')) {
+                    imageUrl = `https://tishopapi.naxgrinting.my.id${imageUrl}`;
+                } else {
+                    imageUrl = `https://tishopapi.naxgrinting.my.id/${imageUrl}`;
+                }
+            } else if (!imageUrl && item.product.Media && item.product.Media.length > 0) {
+                // Fallback to media if image field is empty but media exists (similar to detail page)
+                let mediaUrl = item.product.Media[0].media_url;
+                if (mediaUrl.startsWith('/')) {
+                    imageUrl = `https://tishopapi.naxgrinting.my.id${mediaUrl}`;
+                } else {
+                    imageUrl = `https://tishopapi.naxgrinting.my.id/${mediaUrl}`;
+                }
+            }
+
             return {
-                id: item.id || item.productId || Date.now(),
-                name: item.name || item.productName || 'Unknown Product',
-                category: item.category || 'Product',
-                price: parseFloat(item.price) || 0,
-                originalPrice: item.originalPrice ? parseFloat(item.originalPrice) : null,
-                quantity: parseInt(item.quantity) || 1,
-                size: item.size || item.variantSize || 'N/A',
-                color: item.color || 'N/A',
-                image: item.image || null
+                id: item.cart_item_id,
+                variantId: item.variant.id,
+                name: item.product.name,
+                category: item.product.slug,
+                price: parseFloat(item.price),
+                originalPrice: null,
+                quantity: parseInt(item.qty),
+                size: item.variant.value,
+                color: 'N/A',
+                image: imageUrl
             };
         }
 
-        function updateQuantity(itemId, change) {
+        async function updateQuantity(itemId, change) {
             const item = cartItems.find(i => i.id === itemId);
-            if (item) {
-                item.quantity = Math.max(1, item.quantity + change);
-                saveCart();
-                renderCart();
-                updateGlobalCartCount();
+            if (!item) return;
+
+            // If reducing quantity to 0 or less, confirm removal
+            if (item.quantity + change < 1) {
+                removeItem(itemId);
+                return;
+            }
+
+            try {
+                if (change > 0) {
+                    // Start Loading
+                    // Optional: Add loading UI
+
+                    // Increase Quantity (PUT adds the qty specified)
+                    await fetch('/cart', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            item_id: itemId,
+                            qty: change // Sending the delta to add
+                        })
+                    });
+                } else {
+                    // Decrease Quantity (DELETE reduces the qty specified)
+                    await fetch('/cart', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            item_id: itemId,
+                            qty: Math.abs(change) // Sending the delta to remove
+                        })
+                    });
+                }
+
+                loadCart(); // Reload to get fresh state
+                showCartToast('Cart updated', 'success');
+
+            } catch (e) {
+                console.error(e);
+                showCartToast('Failed to update cart', 'error');
             }
         }
 
-        function removeItem(itemId) {
-            cartItems = cartItems.filter(i => i.id !== itemId);
-            saveCart();
-            renderCart();
-            updateGlobalCartCount();
-            showToast('Item removed from cart', 'info');
+        async function removeItem(itemId) {
+            const item = cartItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const result = await Swal.fire({
+                title: 'Remove item?',
+                text: `Are you sure you want to remove "${item.name}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it!',
+                background: isDark ? '#1b1b18' : '#ffffff',
+                color: isDark ? '#ffffff' : '#1b1b18'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // DELETE /api/cart/delete with qty = current_qty
+                await fetch('/cart', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    body: JSON.stringify({
+                        item_id: itemId,
+                        qty: item.quantity
+                    })
+                });
+
+                loadCart();
+                showCartToast('Item removed from cart', 'info');
+            } catch (e) {
+                console.error(e);
+                showCartToast('Failed to remove item', 'error');
+            }
+        }
+
+        async function clearMyCart() {
+            if (cartItems.length === 0) return;
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const result = await Swal.fire({
+                title: 'Clear Cart?',
+                text: "Are you sure you want to remove all items?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, clear all!',
+                background: isDark ? '#1b1b18' : '#ffffff',
+                color: isDark ? '#ffffff' : '#1b1b18'
+            });
+
+            if (!result.isConfirmed) return;
+
+            showCartToast('Clearing cart...', 'info');
+
+            try {
+                // Iteratively delete all items sequentially to avoid backend locking/race conditions
+                let hasError = false;
+                for (const item of cartItems) {
+                    try {
+                        const response = await fetch('/cart', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            },
+                            body: JSON.stringify({
+                                item_id: item.id,
+                                qty: item.quantity
+                            })
+                        });
+                        if (!response.ok) {
+                            console.error(`Failed to delete item ${item.id}`, response.status);
+                            hasError = true;
+                        }
+                    } catch (err) {
+                        console.error(`Error deleting item ${item.id}`, err);
+                        hasError = true;
+                    }
+                }
+
+                await loadCart();
+
+                if (hasError) {
+                    showCartToast('Some items could not be removed', 'warning');
+                } else {
+                    showCartToast('Cart cleared', 'success');
+                }
+
+            } catch (e) {
+                console.error('Error clearing cart:', e);
+                showCartToast('Failed to clear cart', 'error');
+                loadCart(); // Reload to safeguard state
+            }
         }
 
         function saveCart() {
-            const cartData = {
-                items: cartItems,
-                promo: appliedPromo
-            };
-            localStorage.setItem('cart', JSON.stringify(cartData));
+            // No-op for API-based cart
         }
 
         function applyPromoCode() {
@@ -557,7 +718,7 @@
             const code = promoInput.value.trim().toUpperCase();
 
             if (!code) {
-                showToast('Please enter a promo code', 'error');
+                showCartToast('Please enter a promo code', 'error');
                 return;
             }
 
@@ -566,11 +727,10 @@
                     code: code,
                     ...validPromoCodes[code]
                 };
-                showToast(`Promo code applied! ${validPromoCodes[code].label}`, 'success');
-                saveCart();
-                renderCart();
+                showCartToast(`Promo code applied! ${validPromoCodes[code].label}`, 'success');
+                renderCart(); // Re-render to show discount
             } else {
-                showToast('Invalid promo code', 'error');
+                showCartToast('Invalid promo code', 'error');
             }
         }
 
@@ -580,71 +740,45 @@
             if (promoInput) {
                 promoInput.value = '';
             }
-            showToast('Promo code removed', 'info');
-            saveCart();
+            showCartToast('Promo code removed', 'info');
             renderCart();
         }
 
-        function showToast(message, type = 'info') {
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container';
-                toastContainer.style.cssText =
-                    'position: fixed; bottom: 30px; right: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px;';
-                document.body.appendChild(toastContainer);
-            }
+        function showCartToast(message, type = 'info') {
+            const isDark = document.documentElement.classList.contains('dark');
 
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type} show`;
+            // Map types to SweetAlert icons
+            const swalType = type === 'error' ? 'error' :
+                type === 'success' ? 'success' :
+                type === 'info' ? 'info' : 'info'; // Default fallback
 
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                info: 'fa-info-circle'
-            };
+            const title = type === 'error' ? 'Error' :
+                type === 'success' ? 'Success' :
+                type === 'info' ? 'Info' : 'Notification';
 
-            const colors = {
-                success: '#4caf50',
-                error: '#f44336',
-                info: 'var(--teal)'
-            };
-
-            toast.innerHTML = `
-                <div class="toast-icon" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: ${colors[type]}15; color: ${colors[type]};">
-                    <i class="fas ${icons[type]}"></i>
-                </div>
-                <div class="toast-content" style="flex: 1;">
-                    <div class="toast-message" style="font-size: 0.9rem;">${message}</div>
-                </div>
-            `;
-
-            toast.style.cssText = `
-                padding: 18px 25px;
-                background: var(--bg-card);
-                border-radius: 10px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                max-width: 350px;
-                transform: translateX(0);
-                transition: var(--transition);
-            `;
-
-            toastContainer.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.transform = 'translateX(120%)';
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: swalType,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: isDark ? '#1b1b18' : '#ffffff',
+                color: isDark ? '#ffffff' : '#1b1b18',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
         }
 
-        function renderCart() {
-            console.log(cartItems);
+        function renderCart(totalPriceOverride = null) {
             const cartContent = document.getElementById('cartContent');
 
             if (cartItems.length === 0) {
+                // Empty state logic...
                 cartContent.innerHTML = `
                     <div class="empty-cart">
                         <div class="empty-cart-icon">
@@ -652,19 +786,19 @@
                         </div>
                         <h2 class="empty-cart-title">Your Cart is Empty</h2>
                         <p class="empty-cart-desc">Looks like you haven't added anything to your cart yet.</p>
-                        <a href="/" class="shop-now-btn">Start Shopping</a>
+                        <a href="{{ route('products.index') }}" class="shop-now-btn">Start Shopping</a>
                     </div>
                 `;
                 return;
             }
 
             const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const discount = cartItems.reduce((sum, item) => {
-                if (item.originalPrice) {
-                    return sum + ((item.originalPrice - item.price) * item.quantity);
-                }
-                return sum;
-            }, 0);
+            // Discount logic logic...
+            const discount = 0; // API doesn't seem to return original prices for calc, maybe we skip or use what we have? 
+            // The API returns "total_price" at the top level. We should probably use that if possible?
+            // "data": { "total_price": 792000, ... }
+            // Let's rely on calculated sum for now unless we pass the total price in.
+
             const shipping = subtotal > 500000 ? 0 : 25000;
 
             let promoDiscount = 0;
@@ -677,7 +811,7 @@
             const cartItemsHTML = cartItems.map(item => `
                 <div class="cart-item">
                     <div class="cart-item-image">
-                        ${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-tshirt\\'></i>';">` : `<i class="fas fa-tshirt"></i>`}
+                         ${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-tshirt\\'></i>';">` : `<i class="fas fa-tshirt"></i>`}
                     </div>
                     <div class="cart-item-details">
                         <div class="cart-item-header">
@@ -685,12 +819,11 @@
                             <p class="cart-item-category">${item.category}</p>
                         </div>
                         <div class="cart-item-meta">
-                            <span><i class="fas fa-palette"></i> ${item.color}</span>
                             <span><i class="fas fa-ruler"></i> ${item.size}</span>
                         </div>
                         <div class="cart-item-actions">
                             <div class="quantity-control">
-                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)" ${item.quantity <= 1 ? 'disabled' : ''}>
+                                <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <span class="quantity-value">${item.quantity}</span>
@@ -706,7 +839,6 @@
                     <div class="cart-item-price-section">
                         <div>
                             <div class="cart-item-price">${formatRupiah(item.price * item.quantity)}</div>
-                            ${item.originalPrice ? `<div class="cart-item-original-price">${formatRupiah(item.originalPrice * item.quantity)}</div>` : ''}
                         </div>
                     </div>
                 </div>
@@ -720,63 +852,55 @@
                     <div class="cart-summary">
                         <h2 class="summary-title">Order Summary</h2>
                         
-                        ${subtotal < 500000 ? `
-                                            <div class="free-shipping-notice">
-                                                <i class="fas fa-truck"></i>
-                                                Add ${formatRupiah(500000 - subtotal)} more for FREE shipping!
-                                            </div>
-                                        ` : `
-                                            <div class="free-shipping-notice">
-                                                <i class="fas fa-check-circle"></i>
-                                                You qualify for FREE shipping!
-                                            </div>
-                                        `}
+                         ${subtotal < 500000 ? `
+                                                                                <div class="free-shipping-notice">
+                                                                                    <i class="fas fa-truck"></i>
+                                                                                    Add ${formatRupiah(500000 - subtotal)} more for FREE shipping!
+                                                                                </div>
+                                                                            ` : `
+                                                                                <div class="free-shipping-notice">
+                                                                                    <i class="fas fa-check-circle"></i>
+                                                                                    You qualify for FREE shipping!
+                                                                                </div>
+                                                                            `}
                         
                         <div class="summary-row">
                             <span class="summary-label">Subtotal</span>
                             <span class="summary-value">${formatRupiah(subtotal)}</span>
                         </div>
-                        ${discount > 0 ? `
-                                            <div class="summary-row">
-                                                <span class="summary-label">Discount</span>
-                                                <span class="summary-value discount">-${formatRupiah(discount)}</span>
-                                            </div>
-                                        ` : ''}
+                       
                         <div class="summary-row">
                             <span class="summary-label">Shipping</span>
                             <span class="summary-value">${shipping === 0 ? 'FREE' : formatRupiah(shipping)}</span>
                         </div>
                         ${appliedPromo ? `
-                                            <div class="summary-row">
-                                                <span class="summary-label">Promo (${appliedPromo.code})</span>
-                                                <span class="summary-value discount">-${formatRupiah(promoDiscount)}</span>
-                                            </div>
-                                        ` : ''}
+                                                                                <div class="summary-row">
+                                                                                    <span class="summary-label">Promo (${appliedPromo.code})</span>
+                                                                                    <span class="summary-value discount">-${formatRupiah(promoDiscount)}</span>
+                                                                                </div>
+                                                                            ` : ''}
                         
                         <div class="promo-code">
-                            ${appliedPromo ? `
-                                                <div style="background: linear-gradient(135deg, var(--rose) 0%, #c48b7f 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                                                    <div>
-                                                        <div style="font-weight: 600; margin-bottom: 3px;">
-                                                            <i class="fas fa-tag"></i> ${appliedPromo.code}
-                                                        </div>
-                                                        <div style="font-size: 0.85rem; opacity: 0.9;">
-                                                            ${appliedPromo.label} Applied
-                                                        </div>
-                                                    </div>
-                                                    <button onclick="removePromoCode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                            ` : `
-                                                <div class="promo-input-group">
-                                                    <input type="text" class="promo-input" placeholder="Enter promo code" onkeypress="if(event.key==='Enter') applyPromoCode()">
-                                                    <button class="promo-btn" onclick="applyPromoCode()">Apply</button>
-                                                </div>
-                                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px;">
-                                                    <i class="fas fa-info-circle"></i> Try: DISKON10, DISKON15, DISKON20
-                                                </div>
-                                            `}
+                             ${appliedPromo ? `
+                                                                                    <div style="background: linear-gradient(135deg, var(--rose) 0%, #c48b7f 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                                                                                        <div>
+                                                                                            <div style="font-weight: 600; margin-bottom: 3px;">
+                                                                                                <i class="fas fa-tag"></i> ${appliedPromo.code}
+                                                                                            </div>
+                                                                                            <div style="font-size: 0.85rem; opacity: 0.9;">
+                                                                                                ${appliedPromo.label} Applied
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <button onclick="removePromoCode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                                                                                            <i class="fas fa-times"></i>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                ` : `
+                                                                                    <div class="promo-input-group">
+                                                                                        <input type="text" class="promo-input" placeholder="Enter promo code" onkeypress="if(event.key==='Enter') applyPromoCode()">
+                                                                                        <button class="promo-btn" onclick="applyPromoCode()">Apply</button>
+                                                                                    </div>
+                                                                                `}
                         </div>
                         
                         <div class="summary-row total">
@@ -798,26 +922,13 @@
         }
 
         function checkout() {
-            if (cartItems.length === 0) {
-                showToast('Your cart is empty', 'error');
-                return;
-            }
-            window.location.href = '/checkout';
-        }
-
-        function updateGlobalCartCount() {
-            const cartCountEl = document.getElementById('cartCount');
-            if (cartCountEl) {
-                const count = cartItems.reduce((total, item) => total + item.quantity, 0);
-                cartCountEl.textContent = count;
-            }
+            showCartToast('Proceeding to checkout...', 'success');
+            setTimeout(() => {
+                window.location.href = '/checkout';
+            }, 1000);
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCart();
-            renderCart();
-            updateGlobalCartCount();
-        });
+        document.addEventListener('DOMContentLoaded', loadCart);
     </script>
 @endsection

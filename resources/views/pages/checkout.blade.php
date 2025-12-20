@@ -8,6 +8,15 @@
             <h1 class="checkout-title">Checkout</h1>
         </div>
 
+        <!-- Navigation Buttons -->
+        <div class="checkout-actions">
+            <button class="btn-secondary" id="prevBtn" onclick="prevStep()"
+                style="display: none;">{{ __('messages.checkout_back') }}</button>
+            <button class="btn-primary" id="nextBtn" onclick="nextStep()">{{ __('messages.checkout_continue') }}</button>
+            <button class="btn-primary" id="placeOrderBtn" onclick="placeOrder()"
+                style="display: none;">{{ __('messages.checkout_place_order') }}</button>
+        </div>
+
         <!-- Progress Steps -->
         <div class="checkout-steps">
             <div class="step active" data-step="1">
@@ -249,9 +258,13 @@
                                     <input type="text" class="form-input" id="expiryDate" placeholder="MM/YY"
                                         maxlength="5">
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">CVV *</label>
-                                    <input type="text" class="form-input" id="cvv" placeholder="123"
+                                <div class="form-group half">
+                                    <label class="form-label" for="cvv">
+                                        CVV
+                                        <i class="fas fa-question-circle" title="3-digit code on back of card"
+                                            style="cursor: help; color: var(--text-secondary); margin-left: 5px;"></i>
+                                    </label>
+                                    <input type="text" class="form-input" id="cvv" placeholder="123" required
                                         maxlength="3">
                                 </div>
                             </div>

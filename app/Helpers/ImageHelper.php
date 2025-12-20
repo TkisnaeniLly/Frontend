@@ -24,7 +24,11 @@ class ImageHelper
             return $path;
         }
 
-        if (str_starts_with($path, '/storage/') || str_starts_with($path, '/images/')) {
+        if (str_starts_with($path, '/images/')) {
+            return 'https://tishopapi.naxgrinting.my.id' . $path;
+        }
+
+        if (str_starts_with($path, '/storage/')) {
             return asset(ltrim($path, '/'));
         }
 

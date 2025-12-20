@@ -5,23 +5,18 @@
         <div class="hero-bg"></div>
         <div class="hero-pattern"></div>
         <div class="hero-content">
-            <p class="hero-subtitle">New Collection 2025</p>
-            <h1 class="hero-title">Timeless <span>Elegance</span></h1>
-            <p class="hero-desc">Discover our curated collection of luxury fashion pieces, crafted with exceptional attention
-                to detail and sustainable materials.</p>
-            <a href="#products" class="hero-btn">Explore Collection</a>
-        </div>
-        <div class="scroll-indicator">
-            <span>Scroll</span>
-            <i class="fas fa-chevron-down"></i>
+            <p class="hero-subtitle">{{ __('messages.hero_subtitle') }}</p>
+            <h1 class="hero-title">{!! __('messages.hero_title') !!}</h1>
+            <p class="hero-desc">{{ __('messages.hero_desc') }}</p>
+            <a href="#products" class="hero-btn">{{ __('messages.explore_btn') }}</a>
         </div>
     </section>
 
     <!-- Categories Section -->
     <section class="categories" id="collections">
         <div class="section-header">
-            <p class="section-subtitle">Explore</p>
-            <h2 class="section-title">Featured Collections</h2>
+            <p class="section-subtitle">{{ __('messages.section_explore') }}</p>
+            <h2 class="section-title">{{ __('messages.section_featured_collections') }}</h2>
         </div>
         <div class="categories-grid">
             <div class="category-card" data-category="t-shirt">
@@ -29,10 +24,10 @@
                     <i class="fas fa-tshirt"></i>
                 </div>
                 <div class="category-content">
-                    <h3 class="category-name">T-Shirts</h3>
+                    <h3 class="category-name">{{ __('messages.category_tshirt') }}</h3>
                     <p class="category-count">
                         {{ count(array_filter($products, function ($p) {return isset($p['category']) && $p['category'] === 't-shirt';})) }}
-                        Products</p>
+                        {{ __('messages.products_count') }}</p>
                 </div>
             </div>
             <div class="category-card" data-category="jaket">
@@ -40,10 +35,10 @@
                     <i class="fas fa-vest"></i>
                 </div>
                 <div class="category-content">
-                    <h3 class="category-name">Jackets</h3>
+                    <h3 class="category-name">{{ __('messages.category_jacket') }}</h3>
                     <p class="category-count">
                         {{ count(array_filter($products, function ($p) {return isset($p['category']) && $p['category'] === 'jaket';})) }}
-                        Products</p>
+                        {{ __('messages.products_count') }}</p>
                 </div>
             </div>
             <div class="category-card" data-category="sepatu">
@@ -51,10 +46,10 @@
                     <i class="fas fa-shoe-prints"></i>
                 </div>
                 <div class="category-content">
-                    <h3 class="category-name">Shoes</h3>
+                    <h3 class="category-name">{{ __('messages.category_shoes') }}</h3>
                     <p class="category-count">
                         {{ count(array_filter($products, function ($p) {return isset($p['category']) && $p['category'] === 'sepatu';})) }}
-                        Products</p>
+                        {{ __('messages.products_count') }}</p>
                 </div>
             </div>
             <div class="category-card" data-category="new">
@@ -62,10 +57,10 @@
                     <i class="fas fa-star"></i>
                 </div>
                 <div class="category-content">
-                    <h3 class="category-name">New Arrivals</h3>
+                    <h3 class="category-name">{{ __('messages.category_new') }}</h3>
                     <p class="category-count">
                         {{ count(array_filter($products, function ($p) {return isset($p['badge']) && $p['badge'] === 'New';})) }}
-                        Products</p>
+                        {{ __('messages.products_count') }}</p>
                 </div>
             </div>
         </div>
@@ -74,23 +69,26 @@
     <!-- Products Section -->
     <section class="products" id="products">
         <div class="section-header">
-            <p class="section-subtitle">Shop Now</p>
-            <h2 class="section-title">Featured Products</h2>
+            <p class="section-subtitle">{{ __('messages.section_shop_now') }}</p>
+            <h2 class="section-title">{{ __('messages.section_featured_products') }}</h2>
         </div>
         <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">All</button>
-            <button class="filter-tab" data-filter="t-shirt">T-Shirts</button>
-            <button class="filter-tab" data-filter="jaket">Jackets</button>
-            <button class="filter-tab" data-filter="sepatu">Shoes</button>
+            <button class="filter-tab active" data-filter="all">{{ __('messages.filter_all') }}</button>
+            <button class="filter-tab" data-filter="t-shirt">{{ __('messages.category_tshirt') }}</button>
+            <button class="filter-tab" data-filter="jaket">{{ __('messages.category_jacket') }}</button>
+            <button class="filter-tab" data-filter="sepatu">{{ __('messages.category_shoes') }}</button>
             <button class="filter-tab" data-filter="new">New</button>
         </div>
         <div class="products-grid" id="productsGrid">
             @foreach ($products as $product)
                 <div class="product-card" data-id="{{ $product['id'] }}" data-category="{{ $product['category'] }}"
-                    data-badge="{{ $product['badge'] ?? '' }}">
+                    data-badge="{{ $product['badge'] ?? '' }}"
+                    onclick="window.location.href='{{ route('product.detail', $product['slug']) }}'"
+                    style="cursor: pointer;">
                     <div class="product-image" style="background: linear-gradient(135deg, #D6A99D 0%, #C9967E 100%);">
                         @if (!empty($product['image']))
-                            <img src="{{ App\Helpers\ImageHelper::getUrl($product['image']) }}" alt="{{ $product['name'] }}"
+                            <img src="{{ App\Helpers\ImageHelper::getUrl($product['image']) }}"
+                                alt="{{ $product['name'] }}"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                                 style="width: 100%; height: 100%; object-fit: cover;">
                         @else
@@ -100,18 +98,22 @@
                             <span class="product-badge">{{ $product['badge'] }}</span>
                         @endif
                         <div class="product-actions">
-                            <button class="product-action-btn wishlist-btn" title="Add to Wishlist">
+                            <button class="product-action-btn wishlist-btn" title="Add to Wishlist"
+                                onclick="event.stopPropagation()">
                                 <i class="far fa-heart"></i>
                             </button>
                             <button class="product-action-btn quick-view-btn" data-product-id="{{ $product['id'] }}"
-                                title="Quick View">
+                                title="Quick View" onclick="event.stopPropagation()">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <p class="product-category">{{ $product['category'] }}</p>
-                        <h3 class="product-name">{{ $product['name'] }}</h3>
+                        <a href="{{ route('product.detail', $product['slug']) }}"
+                            style="text-decoration: none; color: inherit;">
+                            <h3 class="product-name">{{ $product['name'] }}</h3>
+                        </a>
                         @if (!empty($product['brand']))
                             <p class="product-brand" style="font-size: 0.85rem; color: #888; margin-top: 0.25rem;">
                                 {{ $product['brand'] }}</p>
@@ -131,12 +133,12 @@
 
     <!-- Newsletter Section -->
     <section class="newsletter">
-        <h2 class="newsletter-title">Join Our World</h2>
-        <p class="newsletter-desc">Subscribe to receive exclusive offers, early access to new collections, and personalized
-            style recommendations.</p>
+        <h2 class="newsletter-title">{{ __('messages.newsletter_title') }}</h2>
+        <p class="newsletter-desc">{{ __('messages.newsletter_desc') }}</p>
         <form class="newsletter-form" id="newsletterForm">
-            <input type="email" class="newsletter-input" placeholder="Enter your email address" required>
-            <button type="submit" class="newsletter-btn">Subscribe</button>
+            <input type="email" class="newsletter-input" placeholder="{{ __('messages.newsletter_placeholder') }}"
+                required>
+            <button type="submit" class="newsletter-btn">{{ __('messages.newsletter_btn') }}</button>
         </form>
     </section>
 
